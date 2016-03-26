@@ -19,8 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{01565FF9-0B8D-4142-9C50-4ED4C2117D05}</ProjectGuid>
-    <RootNamespace>Hash</RootNamespace>
+    <ProjectGuid>{EE1B8BAA-F522-4346-B8BE-4CBAC95ECA88}</ProjectGuid>
+    <RootNamespace>IndexFile</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

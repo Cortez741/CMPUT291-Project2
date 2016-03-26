@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{01565FF9-0B8D-4142-9C50-4ED4C2117D05}</ProjectGuid>
+    <ProjectGuid>{5EC6291E-1633-41F6-A1D7-63716302FE0D}</ProjectGuid>
     <RootNamespace>Hash</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>

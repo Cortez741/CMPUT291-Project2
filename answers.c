@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "BTree\btree.h"
 #include <db.h>
 
 //when using this function, make sure to append "" to both ends of the string before passing the string into this function.
