@@ -30,7 +30,7 @@
     <None Include="..\README.md" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\BTree\btree.h" />
+    <ClInclude Include="btree.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{36AC5240-BFBB-4142-93CD-560C13030185}</ProjectGuid>
