@@ -19,13 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\291lib.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\answers.c" />
-    <ClCompile Include="..\mydbtest.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="btree.c" />
+    <ClCompile Include="main.c" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\answers.txt" />
@@ -34,11 +29,14 @@
     <None Include="..\LICENSE" />
     <None Include="..\README.md" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\BTree\btree.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{36AC5240-BFBB-4142-93CD-560C13030185}</ProjectGuid>
     <RootNamespace>CMPUT291Project2</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
-    <ProjectName>Cross-Program Project</ProjectName>
+    <ProjectName>mydbtest</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -101,7 +99,7 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>Debug</GenerateDebugInformation>
       <AdditionalDependencies>libdb61.lib;libdb_sql61.lib;libdb_stl61.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

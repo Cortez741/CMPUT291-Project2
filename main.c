@@ -5,7 +5,7 @@
 int main(int argc, char * argv[]){
 
     /*prints an error message if the function doesn't get one argument*/
-    if (argc != 1){
+    if (argc != 2){
         printf("Argument Error: This program only accepts one argument, where the argument is either:\n");
         printf("\t(1) <btree> for a btree database\n");
         printf("\t(2) <hash> for a hash database\n");

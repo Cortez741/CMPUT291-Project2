@@ -15,13 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\291lib.c">
+    <ClCompile Include="main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\answers.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\mydbtest.c">
+    <ClCompile Include="btree.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -37,5 +34,10 @@
     <None Include="..\README.md">
       <Filter>Resource Files</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\BTree\btree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
