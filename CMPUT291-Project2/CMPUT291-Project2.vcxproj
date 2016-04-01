@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="btree.c" />
+    <ClCompile Include="hash.c" />
     <ClCompile Include="main.c" />
   </ItemGroup>
   <ItemGroup>
@@ -31,6 +32,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="btree.h" />
+    <ClInclude Include="hash.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{36AC5240-BFBB-4142-93CD-560C13030185}</ProjectGuid>
