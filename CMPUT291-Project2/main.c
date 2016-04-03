@@ -6,7 +6,6 @@ int main(int argc, char ** argv)
 	_wmkdir(u"./tmp");
 	_wmkdir(u"./tmp/ioltuszy");
 
-	//btree(); // Comment out if using from command prompt (Option 1)
 	if (argc == 2)
 	{
 		switch (*argv[1])
@@ -15,7 +14,7 @@ int main(int argc, char ** argv)
 				printf("Invalid DB Type Option");
 				break;
 			case '1': // DB_BTREE
-				btree();
+				BTreeDB();
 				break;
 			case '2': // DB_HASH
 				HashDB();
