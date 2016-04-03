@@ -118,4 +118,3 @@ void BTreeDB()
 	getch();
 	_BTD.destroy(&_BTD);
 }
-
