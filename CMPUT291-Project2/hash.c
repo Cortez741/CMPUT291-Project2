@@ -38,7 +38,7 @@ void HashDB_Quit() {
 
 
 
-DB * HashDB_Pop(DB * db) {
+void HashDB_Pop(DB * db) {
 
 	printf("Populating...\n");
 	int database;
@@ -86,16 +86,13 @@ DB * HashDB_Pop(DB * db) {
 			printf("DB->put: %s\n", db_strerror(database));
 		
 	}
-	return db;
 }
 
-DB * HashDB_Init(DB * db) {
+void HashDB_Init(DB * db) {
 
 	int database;
 	database = db_create(&db, NULL, 0);
 	database = db->open(db, NULL, "./tmp/ioltuszy/hash.db", NULL, DB_HASH, DB_CREATE, 0);
-
-	return db;
 }
 
 void HashDB_Destroy(DB * db) {
@@ -126,8 +123,6 @@ int HashDB_Menu() {
 		scanf("%d", &task);
 		//fflush(stdout);
 
-
-
 		if ((task < 1) || (task > 6)) {
 			printf("Your mode is not one of the accepted modes, please try again.\n");
 			task_pass = 1;
@@ -156,10 +151,10 @@ void HashDB() {
 		//calls appropriate functions
 
 		if (task == 1) {
-			db = HashDB_Init(&db);
+			HashDB_Init(db);
 			printf("DB created\n");
 
-			db = HashDB_Pop(db);
+			HashDB_Pop(db);
 			printf("DB populated\n");
 		}
 
@@ -169,12 +164,12 @@ void HashDB() {
 
 		if (task == 5) {
 			printf("DB deleting\n");
-			HashDB_Destroy(&db);
+			HashDB_Destroy(db);
 		}
 
 		if (task == 6) {
 			printf("DB deleting\n");
-			HashDB_Destroy(&db);
+			HashDB_Destroy(db);
 			done_quit = 1;
 		}
 		
