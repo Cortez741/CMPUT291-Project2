@@ -156,10 +156,10 @@ void HashDB() {
 		//calls appropriate functions
 
 		if (task == 1) {
-			db = HashDB_Init(&db);
+			HashDB_Init(&db);
 			printf("DB created\n");
 
-			db = HashDB_Pop(db);
+			HashDB_Pop(db);
 			printf("DB populated\n");
 		}
 
