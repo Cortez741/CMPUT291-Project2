@@ -1,17 +1,33 @@
-#include "btree.h"
+#include "database.h"
+#include <sys/stat.h>
 
-void BTD_create(BTD* self)
+char * _create(Database* self, int dbtype) // btree = 1, hash = 2
 {
+	struct stat exists;
 	db_create(&self->db, NULL, 0);
-	self->db->open(self->db, NULL, "./tmp/ioltuszy/btree.db", NULL, DB_BTREE, DB_CREATE, 0);
+	char filepath[256];
+	strcpy(filepath, "./tmp/ioltuszy_db/");
+	strcat(filepath, (dbtype == 1) ? "btree" : (dbtype == 2) ? "hash" : "indexfile");
+	strcat(filepath, ".db\0");
+	self->db->open(self->db, NULL, filepath, NULL, dbtype, DB_CREATE, 0);
+	return filepath;
 }
-void BTD_destroy(BTD* self)
+void _destroy(Database* self, char * filepath)
 {
-	self->db->remove(self->db, "./tmp/ioltuszy/btree.db", NULL, 0);
-	self->db->close(self->db, 0);
-	_unlink("./tmp/ioltuszy/btree.db");
+	struct stat exists;
+	int result = stat(filepath, &exists);
+	if (!result)
+	{
+		self->db->close(self->db, 0);
+		//self->db->remove(self->db, "./tmp/ioltuszy_db/btree.db", NULL, 0);
+		_unlink(filepath);
+	}
+	else
+	{
+		puts("The database does not exist; please create one first.");
+	}
 }
-void BTD_populate(BTD* self, int amount)
+void _populate(Database* self, int amount)
 {
 	DBT key, value;
 	memset(&key, 0, sizeof(key));
@@ -43,16 +59,16 @@ void BTD_populate(BTD* self, int amount)
 		value.data = valuebuff;
 		value.size = range;
 		#pragma endregion Value Generation
-		printf("%s\n\n", (char *)key.data);
-		printf("%s\n\n", (char *)value.data);
+		//printf("%s\n\n", (char *)key.data);
+		//printf("%s\n\n", (char *)value.data);
 		
 		if (failure = self->db->put(self->db, NULL, &key, &value, 0))
 		{
-			printf("DB->put: %s\n", db_strerror(failure));
+			//printf("DB->put: %s\n", db_strerror(failure));
 		}
 	}
 }
-int BTD_menu(BTD* self)
+int _menu(Database* self)
 {
 	int invalid = 1;
 	int selection;
@@ -69,9 +85,10 @@ int BTD_menu(BTD* self)
 
 		fflush(stdout);
 		scanf("%d", &selection);
-
 		if ((selection < 1) || (selection > 6)) {
 			printf("Your mode is not one of the accepted modes, please try again.\n");
+			char c;
+			scanf("%c", &c);
 		}
 		else
 		{
@@ -81,26 +98,30 @@ int BTD_menu(BTD* self)
 	}
 	return selection;
 }
-void BTD_init(BTD* self)
+void _init(Database* self)
 {
-	self->create = BTD_create;
-	self->destroy = BTD_destroy;
-	self->populate = BTD_populate;
-	self->menu = BTD_menu;
+	self->create = _create;
+	self->destroy = _destroy;
+	self->populate = _populate;
+	self->menu = _menu;
 }
 
-void BTreeDB()
+void DBCreate(int dbtype)
 {
-	BTD _BTD;
-	BTD_init(&_BTD);
-
-	int task = _BTD.menu(&_BTD);
-	switch (task)
+	Database _D;
+	_init(&_D);
+	char file[256];
+	while (1)
 	{
+		int task = _D.menu(&_D);
+		switch (task)
+		{
+		default:
+			// Nothing
 		case 1:
-			_BTD.create(&_BTD);
+			strcpy(file, _D.create(&_D, dbtype));
 			puts("DB Created");
-			_BTD.populate(&_BTD, 10);
+			_D.populate(&_D, 100000);
 			puts("DB Populated");
 			break;
 		case 2:
@@ -110,11 +131,15 @@ void BTreeDB()
 		case 4:
 			break;
 		case 5:
+			_D.destroy(&_D, file);
 			break;
 		case 6:
+			_D.destroy(&_D, file);
 			break;
+		}
+		if (task == 6)
+		{
+			break;
+		}
 	}
-	puts("Press any key to continue...");
-	getch();
-	_BTD.destroy(&_BTD);
 }

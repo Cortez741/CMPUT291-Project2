@@ -18,11 +18,11 @@
     <ClCompile Include="main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="btree.c">
+    <ClCompile Include="shared.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="hash.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="database.c">
+      <Filter>Resource Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -39,10 +39,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="btree.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="hash.h">
+    <ClInclude Include="database.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

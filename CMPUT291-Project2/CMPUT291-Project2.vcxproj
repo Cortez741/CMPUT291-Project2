@@ -19,9 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="btree.c" />
-    <ClCompile Include="hash.c" />
+    <ClCompile Include="database.c" />
     <ClCompile Include="main.c" />
+    <ClCompile Include="shared.c" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\answers.txt" />
@@ -31,8 +31,7 @@
     <None Include="..\README.md" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="btree.h" />
-    <ClInclude Include="hash.h" />
+    <ClInclude Include="database.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{36AC5240-BFBB-4142-93CD-560C13030185}</ProjectGuid>

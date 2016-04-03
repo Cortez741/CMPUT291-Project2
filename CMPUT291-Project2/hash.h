@@ -16,7 +16,6 @@ void HashD_init(HD* self);
 void HashD_create(HD* self);
 void HashD_destroy(HD* self);
 void HashD_populate(HD* self);
-void HashD_
 int HashD_menu(HD* self);
 void HashDB();
 
