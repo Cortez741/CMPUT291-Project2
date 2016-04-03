@@ -108,49 +108,49 @@ void HashDB_Destroy(DB * db) {
 
 int HashDB_Menu() {
 	int task = 0;
+	int task_pass = 1; //means failed to pass
+
 	//validates user input
+	while (task_pass == 1) {
+		printf("Please enter the number of the task you wish to preform.\n");
+		printf("1 - Create and Populate a database\n");
+		printf("2 - Retrieve records with a given key\n");
+		printf("3 - Retrieve records with given data\n");
+		printf("4 - Retrieve records with a given range of key values\n");
+		printf("5 - Destroy the database\n");
+		printf("6 - Quit\n");
+		printf("Please enter your task: ");
 
-	printf("Please enter the number of the task you wish to preform.\n");
-	printf("1 - Create and Populate a database\n");
-	printf("2 - Retrieve records with a given key\n");
-	printf("3 - Retrieve records with given data\n");
-	printf("4 - Retrieve records with a given range of key values\n");
-	printf("5 - Destroy the database\n");
-	printf("6 - Quit\n");
-	printf("Please enter your task: ");
+		//flushes stdin and takes user input
+		fflush(stdout);
+		scanf("%d", &task);
+		//fflush(stdout);
 
-	//flushes stdin and takes user input
-	fflush(stdout);
-	scanf("%d", &task);
-	//fflush(stdout);
 
+
+		if ((task < 1) || (task > 6)) {
+			printf("Your mode is not one of the accepted modes, please try again.\n");
+			task_pass = 1;
+		}
+
+		else {
+			printf("This is your mode: %d\n", task);
+			task_pass = 0;
+		}
+	}
 	return task;
 }
 
 
 void HashDB() {
 
-	int done_quit = 0;
-	int task_pass = 1;
+	int done_quit = 0;//means not quit
 	int task;
 	DB * db;
 
-	while (done_quit != 1) {
+	while (done_quit == 0) {
 
-		while (task_pass == 1) {
-
-			task = HashDB_Menu();
-
-			if ((task < 1) || (task > 6)) {
-				printf("Your mode is not one of the accepted modes, please try again.\n");
-				task_pass = 1;
-			}
-
-			else {
-				printf("This is your mode: %d\n", task);
-				task_pass = 0;
-			}
-		}
+		task = HashDB_Menu();
 
 		printf("DB deleting\n");
 		//calls appropriate functions
@@ -161,7 +161,15 @@ void HashDB() {
 
 			db = HashDB_Pop(db);
 			printf("DB populated\n");
+		}
 
+		if (task == 2) {
+			printf("Hello");
+		}
+
+		if (task == 5) {
+			printf("DB deleting\n");
+			HashDB_Destroy(&db);
 		}
 
 		if (task == 6) {
@@ -169,7 +177,7 @@ void HashDB() {
 			HashDB_Destroy(&db);
 			done_quit = 1;
 		}
-		task_pass = 1;
+		
 	}
 }
 

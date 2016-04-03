@@ -12,5 +12,4 @@ struct BTreeDatabase {
 void BTD_init(BTD* self);
 void BTD_destroy(BTD* self);
 void btree();
-
 #endif
