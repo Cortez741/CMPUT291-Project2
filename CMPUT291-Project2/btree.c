@@ -5,19 +5,53 @@ void BTD_create(BTD* self)
 	db_create(&self->db, NULL, 0);
 	self->db->open(self->db, NULL, "./tmp/ioltuszy/btree.db", NULL, DB_BTREE, DB_CREATE, 0);
 }
-
 void BTD_destroy(BTD* self)
 {
+	self->db->remove(self->db, "./tmp/ioltuszy/btree.db", NULL, 0);
 	self->db->close(self->db, 0);
 	_unlink("./tmp/ioltuszy/btree.db");
-	//self->db->remove(self->db, "./tmp/ioltuszy/btree.db", NULL, 0);
 }
-
-void BTD_populate(BTD* self)
+void BTD_populate(BTD* self, int amount)
 {
-
+	DBT key, value;
+	memset(&key, 0, sizeof(key));
+	memset(&value, 0, sizeof(value));
+	int range;
+	int seed = 10000000;
+	srand(seed);
+	char keybuff[128];
+	char valuebuff[128];
+	int failure;
+	for (int entry = 0; entry < amount; entry++) { // # to populate with
+		#pragma region Key Generation
+		range = 64 + rand() % (64);
+		for (int kbi = 0; kbi < range; kbi++) // keybuffer index
+		{
+			keybuff[kbi] = (char)(97 + rand() % 26);
+		}
+		keybuff[range] = 0; // null terminate
+		key.data = keybuff;
+		key.size = range;
+		#pragma endregion Key Generation
+		#pragma region Value Generation
+		range = 64 + rand() % (64);
+		for (int vbi = 0; vbi < range; vbi++) // valuebuffer index
+		{
+			valuebuff[vbi] = (char)(97 + rand() % 26);
+		}
+		valuebuff[range] = 0; // null terminate
+		value.data = valuebuff;
+		value.size = range;
+		#pragma endregion Value Generation
+		printf("%s\n\n", (char *)key.data);
+		printf("%s\n\n", (char *)value.data);
+		
+		if (failure = self->db->put(self->db, NULL, &key, &value, 0))
+		{
+			printf("DB->put: %s\n", db_strerror(failure));
+		}
+	}
 }
-
 int BTD_menu(BTD* self)
 {
 	int invalid = 1;
@@ -47,7 +81,6 @@ int BTD_menu(BTD* self)
 	}
 	return selection;
 }
-
 void BTD_init(BTD* self)
 {
 	self->create = BTD_create;
@@ -67,7 +100,7 @@ void BTreeDB()
 		case 1:
 			_BTD.create(&_BTD);
 			puts("DB Created");
-			_BTD.populate(&_BTD);
+			_BTD.populate(&_BTD, 10);
 			puts("DB Populated");
 			break;
 		case 2:
