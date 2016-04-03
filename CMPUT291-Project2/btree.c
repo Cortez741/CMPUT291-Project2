@@ -14,7 +14,7 @@ void BTD_init(BTD* self)
 	self->destroy = BTD_destroy;
 }
 
-void btree()
+void BTreeDB()
 {
 	BTD _BTD;
 	BTD_init(&_BTD);
