@@ -1,4 +1,5 @@
 #include "database.h"
+#include <time.h>
 #include <sys/stat.h>
 
 void _search_key(Database* self)
@@ -23,7 +24,25 @@ void _search_key(Database* self)
 		data.data = search_data;
 		data.size = strlen(search_data) + 1;
 
+
 		if (cursorp->get(cursorp, &key, &data, DB_SET) != 0) {
+			printf("Begin Test...\n");
+			time_t total_t;
+			printf("Begin Test...\n");
+			int test;
+			int i;
+
+			for (i = 0; i < 5; i++) {
+				time_t start_t, end_t;
+				printf("Begin Test...\n");
+				start_t = time(NULL);
+				test = cursorp->get(cursorp, &key, &data, DB_SET);
+				end_t = time(NULL);
+				total_t = end_t - start_t;
+				printf("The time elapsed was: %ld\n", total_t);
+				
+			}
+			
 			// Do something with the data
 			printf("%s\n", key.data);
 		}
