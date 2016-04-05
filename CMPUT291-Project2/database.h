@@ -11,11 +11,13 @@ struct DatabaseStruct {
 	void(*destroy)(Database*);
 	void(*populate)(Database*, int);
 	int(*menu)(Database*);
+	void(*search_key)(Database*);
 };
 void _init(Database* self);
 char * _create(Database* self);
 void _destroy(Database* self);
 void _populate(Database* self, int amount);
+void _search_key(Database* self);
 int _menu(Database* self);
 void DBCreate(int dbtype);
 

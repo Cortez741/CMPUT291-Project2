@@ -1,6 +1,58 @@
 #include "database.h"
+#include <time.h>
 #include <sys/stat.h>
 
+void _search_key(Database* self)
+{
+	printf("Searching..\n");
+	DBC * cursorp;
+	DBT key, data;
+
+	memset(&key, 0, sizeof(DBT));
+	memset(&data, 0, sizeof(DBT));
+
+	if (self->db->cursor(self->db, NULL, &cursorp, 0) != 0) {
+		printf("Curser Creation Failed\n");
+	}
+	else {
+		char * search_key = "xuihibbhelcweqpeqajbapkvtewyoitruikompuhndafmrlqahizwbypdkkhrlesgnzjrd";
+		char * search_data = "";
+
+		//set up keys
+		key.data = search_key;
+		key.size = strlen(search_key) + 1;
+		data.data = search_data;
+		data.size = strlen(search_data) + 1;
+
+
+		if (cursorp->get(cursorp, &key, &data, DB_SET) != 0) {
+			printf("Begin Test...\n");
+			time_t total_t;
+			printf("Begin Test...\n");
+			int test;
+			int i;
+
+			for (i = 0; i < 5; i++) {
+				time_t start_t, end_t;
+				printf("Begin Test...\n");
+				start_t = time(NULL);
+				test = cursorp->get(cursorp, &key, &data, DB_SET);
+				end_t = time(NULL);
+				total_t = end_t - start_t;
+				printf("The time elapsed was: %ld\n", total_t);
+				
+			}
+			
+			// Do something with the data
+			printf("%s\n", key.data);
+		}
+	}
+
+	/* Close the cursor */
+	if (cursorp != NULL) {
+		cursorp->close(cursorp);
+	}
+}
 char * _create(Database* self, int dbtype) // btree = 1, hash = 2
 {
 	struct stat exists;
@@ -59,7 +111,7 @@ void _populate(Database* self, int amount)
 		value.data = valuebuff;
 		value.size = range;
 		#pragma endregion Value Generation
-		//printf("%s\n\n", (char *)key.data);
+		printf("%s\n\n", (char *)key.data);
 		//printf("%s\n\n", (char *)value.data);
 		
 		if (failure = self->db->put(self->db, NULL, &key, &value, 0))
@@ -104,6 +156,7 @@ void _init(Database* self)
 	self->destroy = _destroy;
 	self->populate = _populate;
 	self->menu = _menu;
+	self->search_key = _search_key;
 }
 
 void DBCreate(int dbtype)
@@ -121,10 +174,11 @@ void DBCreate(int dbtype)
 		case 1:
 			strcpy(file, _D.create(&_D, dbtype));
 			puts("DB Created");
-			_D.populate(&_D, 100000);
+			_D.populate(&_D, 100);
 			puts("DB Populated");
 			break;
 		case 2:
+			_D.search_key(&_D);
 			break;
 		case 3:
 			break;
