@@ -3,41 +3,37 @@
 
 void _search_key(Database* self)
 {
-	DBC *cursorp;
+	printf("Searching..\n");
+	DBC * cursorp;
 	DBT key, data;
 
-	int failure;
-	failure = self->db->cursor(&self->db, NULL, &cursorp, 0);
-	if (failure) {
+	memset(&key, 0, sizeof(DBT));
+	memset(&data, 0, sizeof(DBT));
 
-		printf("Curser Creation Failed");
-	}
-
-	char * search_key = "xuihibbhelcweqpeqajbapkvtewyoitruikompuhndafmrlqahizwbypdkkhrlesgnzjrd";
-	char * search_data = "";
-
-	//set up keys
-	key.data = search_key;
-	key.size = strlen(search_key) + 1;
-	data.data = search_data;
-	data.size = strlen(search_data) + 1;
-
-	failure = cursorp->get(cursorp, &key, &data, DB_SET);
-
-	if (!failure) {
-		/* Do something with the data */
-		printf("%s\n", key);
+	if (self->db->cursor(self->db, NULL, &cursorp, 0) != 0) {
+		printf("Curser Creation Failed\n");
 	}
 	else {
-		/* Error handling goes here */
+		char * search_key = "xuihibbhelcweqpeqajbapkvtewyoitruikompuhndafmrlqahizwbypdkkhrlesgnzjrd";
+		char * search_data = "";
+
+		//set up keys
+		key.data = search_key;
+		key.size = strlen(search_key) + 1;
+		data.data = search_data;
+		data.size = strlen(search_data) + 1;
+
+		if (cursorp->get(cursorp, &key, &data, DB_SET) != 0) {
+			// Do something with the data
+			printf("%s\n", key.data);
+		}
 	}
 
 	/* Close the cursor */
-	if (cursorp != NULL)
+	if (cursorp != NULL) {
 		cursorp->close(cursorp);
-
+	}
 }
-
 char * _create(Database* self, int dbtype) // btree = 1, hash = 2
 {
 	struct stat exists;
@@ -163,7 +159,7 @@ void DBCreate(int dbtype)
 			puts("DB Populated");
 			break;
 		case 2:
-			_D.search_key(&_D, file);
+			_D.search_key(&_D);
 			break;
 		case 3:
 			break;
