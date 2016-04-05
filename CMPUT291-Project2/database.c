@@ -1,6 +1,43 @@
 #include "database.h"
 #include <sys/stat.h>
 
+void _search_key(Database* self)
+{
+	DBC *cursorp;
+	DBT key, data;
+
+	int failure;
+	failure = self->db->cursor(&self->db, NULL, &cursorp, 0);
+	if (failure) {
+
+		printf("Curser Creation Failed");
+	}
+
+	char * search_key = "xuihibbhelcweqpeqajbapkvtewyoitruikompuhndafmrlqahizwbypdkkhrlesgnzjrd";
+	char * search_data = "";
+
+	//set up keys
+	key.data = search_key;
+	key.size = strlen(search_key) + 1;
+	data.data = search_data;
+	data.size = strlen(search_data) + 1;
+
+	failure = cursorp->get(cursorp, &key, &data, DB_SET);
+
+	if (!failure) {
+		/* Do something with the data */
+		printf("%s\n", key);
+	}
+	else {
+		/* Error handling goes here */
+	}
+
+	/* Close the cursor */
+	if (cursorp != NULL)
+		cursorp->close(cursorp);
+
+}
+
 char * _create(Database* self, int dbtype) // btree = 1, hash = 2
 {
 	struct stat exists;
@@ -59,7 +96,7 @@ void _populate(Database* self, int amount)
 		value.data = valuebuff;
 		value.size = range;
 		#pragma endregion Value Generation
-		//printf("%s\n\n", (char *)key.data);
+		printf("%s\n\n", (char *)key.data);
 		//printf("%s\n\n", (char *)value.data);
 		
 		if (failure = self->db->put(self->db, NULL, &key, &value, 0))
@@ -104,6 +141,7 @@ void _init(Database* self)
 	self->destroy = _destroy;
 	self->populate = _populate;
 	self->menu = _menu;
+	self->search_key = _search_key;
 }
 
 void DBCreate(int dbtype)
@@ -121,10 +159,11 @@ void DBCreate(int dbtype)
 		case 1:
 			strcpy(file, _D.create(&_D, dbtype));
 			puts("DB Created");
-			_D.populate(&_D, 100000);
+			_D.populate(&_D, 100);
 			puts("DB Populated");
 			break;
 		case 2:
+			_D.search_key(&_D, file);
 			break;
 		case 3:
 			break;
