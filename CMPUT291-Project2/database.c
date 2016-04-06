@@ -32,8 +32,19 @@ searchResult _populate(Database* self, int amount)
 {
 	searchResult sr;
 	DBT key, value;
+
+	char * search_keys[4];
+
+	for (int i = 0; i < 4; i++) {
+
+		if ((search_keys[i] = malloc(sizeof(char) * 128)) == NULL) {
+			printf("problem allocating memory\n");
+		}
+	}
+
 	memset(&key, 0, sizeof(key));
 	memset(&value, 0, sizeof(value));
+
 	int range;
 	int seed = 10000000;
 	srand(seed);
@@ -41,6 +52,7 @@ searchResult _populate(Database* self, int amount)
 	char valuebuff[128];
 	int failure;
 	for (int entry = 0; entry < amount; entry++) { // # to populate with
+
 		#pragma region Key Generation
 		range = 64 + rand() % (64);
 		for (int kbi = 0; kbi < range; kbi++) // keybuffer index
@@ -61,6 +73,26 @@ searchResult _populate(Database* self, int amount)
 		value.data = valuebuff;
 		value.size = range;
 		#pragma endregion Value Generation
+
+		if (entry == 24) {
+			strcpy(search_keys[0], (char *)key.data);
+			printf("The key to search is: %s\n", search_keys[0]);
+		}
+
+		if (entry == 49) {
+			strcpy(search_keys[1], (char *)key.data);
+			printf("The key to search is: %s\n", search_keys[1]);
+		}
+
+		if (entry == 74) {
+			strcpy(search_keys[2], (char *)key.data);
+			printf("The key to search is: %s\n", search_keys[2]);
+		}
+
+		if (entry == 99) {
+			strcpy(search_keys[3], (char *)key.data);
+			printf("The key to search is: %s\n", search_keys[3]);
+		}
 
 		if (entry == 5)
 		{
