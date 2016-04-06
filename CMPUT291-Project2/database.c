@@ -1,6 +1,8 @@
 #include "database.h"
 #include "timer.h"
 
+#define RAND_MAX 100000
+
 void AddEntry(Database* self, char * keyc, char * valuec)
 {
 	DBT key, value;
@@ -50,6 +52,16 @@ void _populate(Database* self, int amount)
 	char keybuff[128];
 	char valuebuff[128];
 	int ret;
+
+	memset(&self->keytomatch1, 0, sizeof(self->keytomatch1));
+	memset(&self->valuetomatch1, 0, sizeof(self->valuetomatch1));
+
+	int random_exists[8];
+
+	for (int i = 0; i <= 7; i++) {
+		random_exists[i] = rand();
+	}
+
 	for (int entry = 0; entry < amount; entry++) { // # to populate with
 		#pragma region Key Generation
 		range = 64 + rand() % (64);
@@ -69,6 +81,38 @@ void _populate(Database* self, int amount)
 		#pragma endregion Value Generation
 
 		//printf("Key: %s\nData: %s\n", keybuff, valuebuff);
+		
+		if (entry == random_exists[0]) {
+			strcpy(self->keytomatch0, keybuff);
+			strcpy(self->valuetomatch0, valuebuff);
+
+			printf("Key: %s\n", self->keytomatch0);
+			printf("Value: %s\n", self->valuetomatch0);
+		}
+
+		if (entry == random_exists[1]) {
+			strcpy(self->keytomatch1, keybuff);
+			strcpy(self->valuetomatch1, valuebuff);
+
+			printf("Key: %s\n", self->keytomatch1);
+			printf("Value: %s\n", self->valuetomatch1);
+		}
+
+		if (entry == random_exists[2]) {
+			strcpy(self->keytomatch2, keybuff);
+			strcpy(self->valuetomatch2, valuebuff);
+
+			printf("Key: %s\n", self->keytomatch2);
+			printf("Value: %s\n", self->valuetomatch2);
+		}
+
+		if (entry == random_exists[3]) {
+			strcpy(self->keytomatch3, keybuff);
+			strcpy(self->valuetomatch3, valuebuff);
+
+			printf("Key: %s\n", self->keytomatch3);
+			printf("Value: %s\n", self->valuetomatch3);
+		}
 		
 		AddEntry(self, keybuff, valuebuff);
 	}
@@ -136,10 +180,11 @@ void DBCreate(int dbtype)
 			_D.cursor = malloc(sizeof(_D.cursor));
 			_D.db->cursor(_D.db, NULL, _D.cursor, 0);
 
-			_D.populate(&_D, 3);
+			_D.populate(&_D, 100000);
 			break;
 		case 2:
 			strcpy(keytomatch, "vbcsyoaravmzrqjvdmqjxumrrndrsvorwcbxgtuyltxlsskxierbwjiumczzlrinyhqrhaasnzqmyrkllkzmkzplhvhszangbvfona");
+
 			memset(&key, 0, sizeof(key));
 			key.data = keytomatch;
 			key.size = strlen(key.data) + 1;
