@@ -1,5 +1,6 @@
 #include "database.h"
 #include <sys/stat.h>
+#include "timer.h"
 
 char * _create(Database* self, int dbtype) // btree = 1, hash = 2
 {
@@ -138,7 +139,7 @@ void DBCreate(int dbtype)
 		case 1:
 			strcpy(file, _D.create(&_D, dbtype));
 			puts("DB: Created");
-			sr = _D.populate(&_D, 10);
+			sr = _D.populate(&_D, 100);
 			_D.db->cursor(_D.db, NULL, &cursor, 0);
 			break;
 		case 2:

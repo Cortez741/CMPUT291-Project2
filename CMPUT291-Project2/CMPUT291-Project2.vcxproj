@@ -22,6 +22,7 @@
     <ClCompile Include="database.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="shared.c" />
+    <ClCompile Include="timer.c" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\answers.txt" />
@@ -32,6 +33,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="database.h" />
+    <ClInclude Include="timer.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{36AC5240-BFBB-4142-93CD-560C13030185}</ProjectGuid>
