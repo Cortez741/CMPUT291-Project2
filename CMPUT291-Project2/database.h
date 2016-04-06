@@ -3,12 +3,13 @@
 
 #include <stdlib.h>
 #include <db.h>
-
+#include <sys/stat.h>
 typedef struct searchResult
 {
 	char key[128];
 	char value[128];
 	int set;
+
 } searchResult;
 
 typedef struct DatabaseStruct Database;
