@@ -36,12 +36,10 @@ searchResult _populate(Database* self, int amount)
 	char * search_keys[4];
 
 	for (int i = 0; i < 4; i++) {
-
 		if ((search_keys[i] = malloc(sizeof(char) * 128)) == NULL) {
 			printf("problem allocating memory\n");
 		}
 	}
-
 	memset(&key, 0, sizeof(key));
 	memset(&value, 0, sizeof(value));
 
@@ -77,11 +75,13 @@ searchResult _populate(Database* self, int amount)
 		if (entry == 24) {
 			strcpy(search_keys[0], (char *)key.data);
 			printf("The key to search is: %s\n", search_keys[0]);
+
 		}
 
 		if (entry == 49) {
 			strcpy(search_keys[1], (char *)key.data);
 			printf("The key to search is: %s\n", search_keys[1]);
+			//strcpy(sr.author, "Nuha Ali");
 		}
 
 		if (entry == 74) {
