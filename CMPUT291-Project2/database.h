@@ -4,18 +4,25 @@
 #include <stdlib.h>
 #include <db.h>
 
+typedef struct searchResult
+{
+	char key[128];
+	char value[128];
+	int set;
+} searchResult;
+
 typedef struct DatabaseStruct Database;
 struct DatabaseStruct {
 	DB* db; 
 	char*(*create)(Database*);
 	void(*destroy)(Database*);
-	void(*populate)(Database*, int);
+	searchResult(*populate)(Database*, int);
 	int(*menu)(Database*);
 };
 void _init(Database* self);
 char * _create(Database* self);
 void _destroy(Database* self);
-void _populate(Database* self, int amount);
+searchResult _populate(Database* self, int amount);
 int _menu(Database* self);
 void DBCreate(int dbtype);
 

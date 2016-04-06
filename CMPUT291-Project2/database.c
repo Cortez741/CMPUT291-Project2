@@ -24,11 +24,12 @@ void _destroy(Database* self, char * filepath)
 	}
 	else
 	{
-		puts("The database does not exist; please create one first.");
+		puts("The database does not exist; please create a database first.");
 	}
 }
-void _populate(Database* self, int amount)
+searchResult _populate(Database* self, int amount)
 {
+	searchResult sr;
 	DBT key, value;
 	memset(&key, 0, sizeof(key));
 	memset(&value, 0, sizeof(value));
@@ -59,14 +60,20 @@ void _populate(Database* self, int amount)
 		value.data = valuebuff;
 		value.size = range;
 		#pragma endregion Value Generation
-		//printf("%s\n\n", (char *)key.data);
-		//printf("%s\n\n", (char *)value.data);
+
+		if (entry == 5)
+		{
+			strcpy(sr.key, (char *)key.data);
+			strcpy(sr.value, (char *)value.data);
+		}
 		
 		if (failure = self->db->put(self->db, NULL, &key, &value, 0))
 		{
 			//printf("DB->put: %s\n", db_strerror(failure));
 		}
 	}
+	sr.set = 1;
+	return sr;
 }
 int _menu(Database* self)
 {
@@ -98,6 +105,10 @@ int _menu(Database* self)
 	}
 	return selection;
 }
+void _retrieve(Database* self)
+{
+
+}
 void _init(Database* self)
 {
 	self->create = _create;
@@ -111,6 +122,12 @@ void DBCreate(int dbtype)
 	Database _D;
 	_init(&_D);
 	char file[256];
+	searchResult sr;
+	memset(&sr, 0, sizeof(sr));
+	DBT key, value;
+	DBC * cursor;
+	memset(&cursor, 0, sizeof(cursor));
+	int ret;
 	while (1)
 	{
 		int task = _D.menu(&_D);
@@ -120,13 +137,41 @@ void DBCreate(int dbtype)
 			// Nothing
 		case 1:
 			strcpy(file, _D.create(&_D, dbtype));
-			puts("DB Created");
-			_D.populate(&_D, 100000);
-			puts("DB Populated");
+			puts("DB: Created");
+			sr = _D.populate(&_D, 10);
+			_D.db->cursor(_D.db, NULL, &cursor, 0);
 			break;
 		case 2:
+			if (sr.set)
+			{
+				memset(&key, 0, sizeof(key));
+				memset(&value, 0, sizeof(value));
+				key.data = sr.key;
+				key.size = sizeof(sr.key);
+				cursor->get(cursor, &key, &value, DB_NEXT);
+				printf("DB: %s\n", value.data);
+			}
+			else
+			{
+				puts("The database has not yet been created");
+			}
 			break;
 		case 3:
+			if (sr.set)
+			{
+				memset(&key, 0, sizeof(key));
+				memset(&value, 0, sizeof(value));
+				value.data = sr.value;
+				value.size = sizeof(sr.value);
+				while ((ret = cursor->get(cursor, &key, &value, DB_NEXT)) == 0)
+					printf("%.*s : %.*s\n",
+						(int)key.size, (char *)key.data,
+						(int)value.size, (char *)value.data);
+			}
+			else
+			{
+				puts("The database has not yet been created");
+			}
 			break;
 		case 4:
 			break;
