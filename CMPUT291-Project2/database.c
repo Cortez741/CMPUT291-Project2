@@ -1,6 +1,21 @@
 #include "database.h"
-#include <sys/stat.h>
 #include "timer.h"
+
+void AddEntry(Database* self, char * keyc, char * valuec)
+{
+	DBT key, value;
+	memset(&key, 0, sizeof(key));
+	key.data = keyc; // a
+	key.size = strlen(key.data) + 1;
+
+	memset(&value, 0, sizeof(value));
+	value.data = valuec; // b
+	value.size = strlen(value.data) + 1;
+
+	int ret;
+	if ((ret = (*self->cursor)->c_put(*self->cursor, &key, &value, DB_KEYFIRST)) != 0)
+		self->db->err(self->db, ret, "DB->cursor");
+}
 
 char * _create(Database* self, int dbtype) // btree = 1, hash = 2
 {
@@ -20,7 +35,6 @@ void _destroy(Database* self, char * filepath)
 	if (!result)
 	{
 		self->db->close(self->db, 0);
-		//self->db->remove(self->db, "./tmp/ioltuszy_db/btree.db", NULL, 0);
 		_unlink(filepath);
 	}
 	else
@@ -28,29 +42,15 @@ void _destroy(Database* self, char * filepath)
 		puts("The database does not exist; please create a database first.");
 	}
 }
-searchResult _populate(Database* self, int amount)
+void _populate(Database* self, int amount)
 {
-	searchResult sr;
-	DBT key, value;
-
-	char * search_keys[4];
-
-	for (int i = 0; i < 4; i++) {
-		if ((search_keys[i] = malloc(sizeof(char) * 128)) == NULL) {
-			printf("problem allocating memory\n");
-		}
-	}
-	memset(&key, 0, sizeof(key));
-	memset(&value, 0, sizeof(value));
-
 	int range;
 	int seed = 10000000;
 	srand(seed);
 	char keybuff[128];
 	char valuebuff[128];
-	int failure;
+	int ret;
 	for (int entry = 0; entry < amount; entry++) { // # to populate with
-
 		#pragma region Key Generation
 		range = 64 + rand() % (64);
 		for (int kbi = 0; kbi < range; kbi++) // keybuffer index
@@ -58,8 +58,6 @@ searchResult _populate(Database* self, int amount)
 			keybuff[kbi] = (char)(97 + rand() % 26);
 		}
 		keybuff[range] = 0; // null terminate
-		key.data = keybuff;
-		key.size = range;
 		#pragma endregion Key Generation
 		#pragma region Value Generation
 		range = 64 + rand() % (64);
@@ -68,45 +66,12 @@ searchResult _populate(Database* self, int amount)
 			valuebuff[vbi] = (char)(97 + rand() % 26);
 		}
 		valuebuff[range] = 0; // null terminate
-		value.data = valuebuff;
-		value.size = range;
 		#pragma endregion Value Generation
 
-		if (entry == 24) {
-			strcpy(search_keys[0], (char *)key.data);
-			printf("The key to search is: %s\n", search_keys[0]);
-
-		}
-
-		if (entry == 49) {
-			strcpy(search_keys[1], (char *)key.data);
-			printf("The key to search is: %s\n", search_keys[1]);
-			//strcpy(sr.author, "Nuha Ali");
-		}
-
-		if (entry == 74) {
-			strcpy(search_keys[2], (char *)key.data);
-			printf("The key to search is: %s\n", search_keys[2]);
-		}
-
-		if (entry == 99) {
-			strcpy(search_keys[3], (char *)key.data);
-			printf("The key to search is: %s\n", search_keys[3]);
-		}
-
-		if (entry == 5)
-		{
-			strcpy(sr.key, (char *)key.data);
-			strcpy(sr.value, (char *)value.data);
-		}
+		//printf("Key: %s\nData: %s\n", keybuff, valuebuff);
 		
-		if (failure = self->db->put(self->db, NULL, &key, &value, 0))
-		{
-			//printf("DB->put: %s\n", db_strerror(failure));
-		}
+		AddEntry(self, keybuff, valuebuff);
 	}
-	sr.set = 1;
-	return sr;
 }
 int _menu(Database* self)
 {
@@ -138,10 +103,6 @@ int _menu(Database* self)
 	}
 	return selection;
 }
-void _retrieve(Database* self)
-{
-
-}
 void _init(Database* self)
 {
 	self->create = _create;
@@ -155,12 +116,12 @@ void DBCreate(int dbtype)
 	Database _D;
 	_init(&_D);
 	char file[256];
-	searchResult sr;
-	memset(&sr, 0, sizeof(sr));
 	DBT key, value;
-	DBC * cursor;
-	memset(&cursor, 0, sizeof(cursor));
+	char keybuff[128];
+	char valuebuff[128];
 	int ret;
+	long start[2], end[2];
+	char keytomatch[128], valuetomatch[128];
 	while (1)
 	{
 		int task = _D.menu(&_D);
@@ -171,40 +132,59 @@ void DBCreate(int dbtype)
 		case 1:
 			strcpy(file, _D.create(&_D, dbtype));
 			puts("DB: Created");
-			sr = _D.populate(&_D, 100);
-			_D.db->cursor(_D.db, NULL, &cursor, 0);
+
+			_D.cursor = malloc(sizeof(_D.cursor));
+			_D.db->cursor(_D.db, NULL, _D.cursor, 0);
+
+			_D.populate(&_D, 3);
 			break;
 		case 2:
-			if (sr.set)
-			{
-				memset(&key, 0, sizeof(key));
-				memset(&value, 0, sizeof(value));
-				key.data = sr.key;
-				key.size = sizeof(sr.key);
-				cursor->get(cursor, &key, &value, DB_NEXT);
-				printf("DB: %s\n", value.data);
-			}
-			else
-			{
-				puts("The database has not yet been created");
-			}
+			strcpy(keytomatch, "vbcsyoaravmzrqjvdmqjxumrrndrsvorwcbxgtuyltxlsskxierbwjiumczzlrinyhqrhaasnzqmyrkllkzmkzplhvhszangbvfona");
+			memset(&key, 0, sizeof(key));
+			key.data = keytomatch;
+			key.size = strlen(key.data) + 1;
+			value.flags = DB_DBT_USERMEM;
+			value.data = valuebuff;
+			value.ulen = sizeof(valuebuff);
+
+			clock_readtime(&start);
+			(*_D.cursor)->c_get(*_D.cursor, &key, &value, DB_SET);
+			// Got an entry with correct data
+			clock_readtime(&end);
+
+			printf("Elapsed (microseconds): %lu\n", (end[1] - start[1])/1000);
+			/*printf("Key: %.*s\nData: %.*s\n",
+				(int)key.size, (char *)key.data,
+				(int)value.size, (char *)value.data);*/
+
 			break;
 		case 3:
-			if (sr.set)
+			strcpy(valuetomatch, "epcykpslluvcytbfctdnjwopnozekrhhmrmkrjavsmfdjuxqayfopcmekzbbtkmklhrwehfsubezzqxnvkgfosplmesujsqcgwyjpjmdvclsibahnafjx");
+			key.flags = DB_DBT_USERMEM;
+			key.data = keybuff;
+			key.ulen = sizeof(keybuff);
+			value.flags = DB_DBT_USERMEM;
+			value.data = valuebuff;
+			value.ulen = sizeof(valuebuff);
+
+			clock_readtime(&start); // Start query
+			(*_D.cursor)->c_get((*_D.cursor), &key, &value, DB_FIRST);
+			if (strcmp((char *)value.data, valuetomatch) == 0)
 			{
-				memset(&key, 0, sizeof(key));
-				memset(&value, 0, sizeof(value));
-				value.data = sr.value;
-				value.size = sizeof(sr.value);
-				while ((ret = cursor->get(cursor, &key, &value, DB_NEXT)) == 0)
-					printf("%.*s : %.*s\n",
-						(int)key.size, (char *)key.data,
-						(int)value.size, (char *)value.data);
+				// Got an entry with correct data
 			}
 			else
 			{
-				puts("The database has not yet been created");
+				while ((ret = (*_D.cursor)->c_get((*_D.cursor), &key, &value, DB_NEXT)) == 0)
+					if (strcmp((char *)value.data, valuetomatch) == 0)
+					{
+						// Got an entry with correct data
+						break;
+					}
 			}
+			clock_readtime(&end); // End query
+
+			printf("Elapsed (microseconds): %lu\n", (end[1] - start[1]) / 1000);
 			break;
 		case 4:
 			break;

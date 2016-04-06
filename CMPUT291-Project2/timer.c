@@ -1,36 +1,43 @@
 #include "timer.h"
 
-void _begin(Timer* self)
+#ifdef _WIN32
+#include <windows.h>
+
+#if defined(_MSC_VER) || defined(_MSC_EXTENSIONS)
+#define U64(x) x##Ui64
+#else
+#define U64(x) x##ULL
+#endif
+
+#define DELTA_EPOCH_IN_100NS  U64(116444736000000000)
+
+long ticks_to_nanos(LONGLONG subsecond_time, LONGLONG frequency)
 {
-	ftime(&(self->start));
-	self->running = 1;
+	return (long)((1e9 * subsecond_time) / frequency);
 }
 
-int _stop(Timer* self)
+ULONGLONG to_quad_100ns(FILETIME ft)
 {
-	if (self->running == 1)
-	{
-		ftime(&(self->end));
-		int diff = (int)(1000.0 * (self->end.time - self->start.time) + (self->end.millitm - self->start.millitm));
-		self->running = 0;
-		return diff;
-	}
-	else
-	{
-		return -1;
-	}
+	ULARGE_INTEGER li;
+	li.LowPart = ft.dwLowDateTime;
+	li.HighPart = ft.dwHighDateTime;
+	return li.QuadPart;
 }
 
-void _initTimer(Timer* self)
+void to_timespec_from_100ns(ULONGLONG t_100ns, long *t)
 {
-	self->begin = _begin;
-	self->stop = _stop;
+	t[0] = (long)(t_100ns / 10000000UL);
+	t[1] = 100 * (long)(t_100ns % 10000000UL);
 }
 
-Timer* TimerCreate()
+void clock_readtime(long* t)
 {
-	Timer _T;
-	memset(&_T, 0, sizeof(_T));
-	_init(&_T);
-	return &_T;
+	LARGE_INTEGER time;
+	LARGE_INTEGER frequency;
+	QueryPerformanceCounter(&time);
+	QueryPerformanceFrequency(&frequency);
+	t[0] = time.QuadPart / frequency.QuadPart; // seconds
+	t[1] = ticks_to_nanos(time.QuadPart % frequency.QuadPart, frequency.QuadPart); // nanoseconds
 }
+
+#endif
