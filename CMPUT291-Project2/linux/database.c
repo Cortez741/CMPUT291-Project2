@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <sys/stat.h>
-#include "db.h"
+#include <db.h>
 #include <string.h>
 typedef struct DatabaseStruct Database;
 struct DatabaseStruct {
