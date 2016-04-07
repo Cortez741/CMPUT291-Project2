@@ -13,12 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="linux">
+      <UniqueIdentifier>{7793b954-14de-4f2a-ad7a-fba4e8383a9b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="shared.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="database.c">
@@ -26,6 +26,15 @@
     </ClCompile>
     <ClCompile Include="timer.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="linux\database.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="linux\main.c">
+      <Filter>linux</Filter>
+    </ClCompile>
+    <ClCompile Include="linux\timer.c">
+      <Filter>linux</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -40,6 +49,9 @@
     <None Include="..\README.md">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="linux\makefile">
+      <Filter>linux</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="database.h">
@@ -47,6 +59,15 @@
     </ClInclude>
     <ClInclude Include="timer.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="linux\database.h">
+      <Filter>linux</Filter>
+    </ClInclude>
+    <ClInclude Include="linux\db.h">
+      <Filter>linux</Filter>
+    </ClInclude>
+    <ClInclude Include="linux\timer.h">
+      <Filter>linux</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,7 +1,28 @@
-#include "database.h"
-#include "timer.h"
+#include <stdlib.h>
+#include <sys/stat.h>
+#include "db.h"
+#include <string.h>
 
-#define db_create(a,b,c);
+typedef struct DatabaseStruct Database;
+struct DatabaseStruct {
+	DB* db;
+	DBC** cursor;
+
+	char **keystomatch;
+	char **valuestomatch;
+};
+
+void clock_readtime(long * s)
+{
+	struct timeval timer;
+	gettimeofday(&timer, NULL);
+	s = (long *)timer.tv_usec;
+}
+
+long diff_time(long* end, long* start)
+{
+	return (end - start) /1000;
+}
 
 void answers(char * string, int newline) {
 	//opens the file
@@ -36,23 +57,21 @@ void AddEntry(Database* self, char * keyc, char * valuec)
 
 char * _create(Database* self, int dbtype) // btree = 1, hash = 2
 {
-	
-	struct stat exists;
-	db_create(&self->db, NULL, 0);
-		
+	db_create(&(self->db), NULL, 0);
 	char filepath[256];
-	strcpy(filepath, "./tmp/ioltuszy_db/");
-	strcat(filepath, (dbtype == 1) ? "btree" : (dbtype == 2) ? "hash" : "indexfile");
-	strcat(filepath, ".db\0");
-	printf("test3\n");
-	int ret;
-	//self->db = malloc(sizeof(self->db));
-	printf("test3\n");
-	if (ret = self->db->open(self->db, NULL, filepath, NULL, dbtype, DB_CREATE, 0755) != 0){
-		self->db->err(self->db, ret, "DB->cursor");
+	memset(&filepath, 0, sizeof(filepath));
+	for (int i=0; i<strlen(filepath); i++)
+	{
+		filepath[0] = malloc(sizeof(char));
 	}
-	printf("test3\n");
-	return filepath;
+	memset(&filepath, 0, sizeof(filepath));
+	strncpy(filepath, "./tmp/ioltuszy_db/", 18);
+	strncat(filepath, (dbtype == 1) ? "btree" : (dbtype == 2) ? "hash" : "indexfile", (dbtype == 1) ? 5 : (dbtype == 2) ? 4 : 9);
+	strncat(filepath, ".db\0", 4);
+	(self->db)->open((self->db), NULL, filepath, NULL, DB_BTREE, DB_CREATE, 0755);
+	char* solution;
+	solution = strdup(filepath);
+	return solution;
 }
 void _destroy(Database* self, char * filepath)
 {
@@ -60,12 +79,7 @@ void _destroy(Database* self, char * filepath)
 	int result = stat(filepath, &exists);
 	if (!result)
 	{
-		self->db->close(self->db, 0);
 		unlink(filepath);
-	}
-	else
-	{
-		puts("The database does not exist; please create a database first.");
 	}
 }
 void _populate(Database* self, int amount)
@@ -75,67 +89,63 @@ void _populate(Database* self, int amount)
 	srand(seed);
 	char keybuff[128];
 	char valuebuff[128];
-	int ret;
 
-	memset(&self->keytomatch1, 0, sizeof(self->keytomatch1));
-	memset(&self->valuetomatch1, 0, sizeof(self->valuetomatch1));
+	self->keystomatch = malloc(4 * sizeof(char*));
+	for (int i = 0; i < 4; i++)
+		self->keystomatch[i] = malloc((128+1) * sizeof(char));
 
-	int random_exists[8];
+	self->valuestomatch = malloc(4 * sizeof(char*));
+	for (int i = 0; i < 4; i++)
+		self->valuestomatch[i] = malloc((128+1) * sizeof(char));
 
-	for (int i = 0; i <= 7; i++) {
-		random_exists[i] = rand();
+	int random_exists[1];
+	for (int i = 0; i <= 1; i++) {
+		random_exists[i] = rand() % 100000;
+	}
+
+	char * keys[4];
+	for (int i=0; i<3; i++)
+	{
+		keys[i] = (char *)malloc(sizeof(char)*129);
 	}
 
 	for (int entry = 0; entry < amount; entry++) { // # to populate with
-#pragma region Key Generation
 		range = 64 + rand() % (64);
 		for (int kbi = 0; kbi < range; kbi++) // keybuffer index
 		{
 			keybuff[kbi] = (char)(97 + rand() % 26);
 		}
 		keybuff[range] = 0; // null terminate
-#pragma endregion Key Generation
-#pragma region Value Generation
 		range = 64 + rand() % (64);
 		for (int vbi = 0; vbi < range; vbi++) // valuebuffer index
 		{
 			valuebuff[vbi] = (char)(97 + rand() % 26);
 		}
 		valuebuff[range] = 0; // null terminate
-#pragma endregion Value Generation
 
 		//printf("Key: %s\nData: %s\n", keybuff, valuebuff);
 
 		if (entry == random_exists[0]) {
-			strcpy(self->keytomatch0, keybuff);
-			strcpy(self->valuetomatch0, valuebuff);
-
-			//printf("Key: %s\n", self->keytomatch0);
-			//printf("Value: %s\n", self->valuetomatch0);
+			self->keystomatch[0] = strdup(keybuff);
+			self->valuestomatch[0] = strdup(valuebuff);
+			
+			printf("Key: %s\n", self->keystomatch[0]);
+			printf("Value: %s\n", self->valuestomatch[0]);
 		}
 
 		if (entry == random_exists[1]) {
-			strcpy(self->keytomatch1, keybuff);
-			strcpy(self->valuetomatch1, valuebuff);
-
-			//printf("Key: %s\n", self->keytomatch1);
-			//printf("Value: %s\n", self->valuetomatch1);
+			self->keystomatch[1] = strdup(keybuff);
+			self->valuestomatch[1] = strdup(valuebuff);
 		}
 
 		if (entry == random_exists[2]) {
-			strcpy(self->keytomatch2, keybuff);
-			strcpy(self->valuetomatch2, valuebuff);
-
-			//printf("Key: %s\n", self->keytomatch2);
-			//printf("Value: %s\n", self->valuetomatch2);
+			self->keystomatch[2] = strdup(keybuff);
+			self->valuestomatch[2] = strdup(valuebuff);
 		}
 
 		if (entry == random_exists[3]) {
-			strcpy(self->keytomatch3, keybuff);
-			strcpy(self->valuetomatch3, valuebuff);
-
-			//printf("Key: %s\n", self->keytomatch3);
-			//printf("Value: %s\n", self->valuetomatch3);
+			self->keystomatch[3] = strdup(keybuff);
+			self->valuestomatch[3] = strdup(valuebuff);
 		}
 		AddEntry(self, keybuff, valuebuff);
 	}
@@ -169,25 +179,16 @@ int _menu(Database* self)
 	}
 	return selection;
 }
-void _initDatabase(Database* self)
-{
-	self->create = _create;
-	self->destroy = _destroy;
-	self->populate = _populate;
-	self->menu = _menu;
-
-
-}
 
 void DBCreate(int dbtype)
 {
-	Database _D;
-	//_D = (Database *)malloc(sizeof(_D));
-	_initDatabase(&_D);
-	char file[256];
+	Database * _D;
+	_D = (Database *)malloc(sizeof(_D));
 	DBT key, value;
 	char keybuff[128];
 	char valuebuff[128];
+	char* filepath;
+	char file[256];
 	int ret;
 	long start, end;
 	char keytomatch[128], valuetomatch[128];
@@ -195,207 +196,202 @@ void DBCreate(int dbtype)
 	int searchnumber = 0;
 	int resultcount = 0;
 	long totalTime = 0;
+	struct stat exists;
+	int result;
 	while (1)
 	{
-		int task = _D.menu(&_D);
+		int task = _menu(_D);
 		switch (task)
 		{
 		default:
 			// Nothing
 		case 1:
-			printf("test1\n");
-			memset(&file, 0, sizeof(file));
-			printf("test2\n");
-			strcpy(file, _D.create((dbtype)));
-			printf("test2\n");
-			puts("DB: Created");
-
-			_D.cursor = malloc(sizeof(_D.cursor));
-			_D.db->cursor(_D.db, NULL, _D.cursor, 0);
-
-			_D.populate(&_D, 100000);
+			filepath = _create(_D,dbtype);
+			memcpy(file, filepath, sizeof(file));
+			_D->cursor = malloc(sizeof(_D->cursor));
+			_D->db->cursor(_D->db, NULL, _D->cursor, 0);
+			_populate(_D, 100000);
 			break;
 		case 2:
-			if (searchnumber == 4) {
-				//this program needs to search over different keys four times. After all keys have been used, they keys will repeat with this message.
-				printf("The keys for search will now repeat.");
-				searchnumber = 0;
-			}
-
-			if (searchnumber == 3) {
-				memset(&keytomatch, 0, sizeof(keytomatch));
-				strcpy(keytomatch, _D.keytomatch3);
-				searchnumber++;
-			}
-
-			if (searchnumber == 2) {
-				memset(&keytomatch, 0, sizeof(keytomatch));
-				strcpy(keytomatch, _D.keytomatch2);
-				searchnumber++;
-			}
-
-			if (searchnumber == 1) {
-				memset(&keytomatch, 0, sizeof(keytomatch));
-				strcpy(keytomatch, _D.keytomatch1);
-				searchnumber++;
-			}
-
-			if (searchnumber == 0) {
-				memset(&keytomatch, 0, sizeof(keytomatch));
-				strcpy(keytomatch, _D.keytomatch0);
-				searchnumber++;
-			}
-
-			memset(&key, 0, sizeof(key));
-			key.data = keytomatch;
-			key.size = strlen(key.data) + 1;
-			value.flags = DB_DBT_USERMEM;
-			value.data = valuebuff;
-			value.ulen = sizeof(valuebuff);
-
-			clock_readtime(&start); // Start query
-			(*_D.cursor)->c_get(*_D.cursor, &key, &value, DB_SET);
-			// Got an entry with correct data
-			clock_readtime(&end); // End query
-
-			answers(key.data, 0);
-			answers(value.data, 1);
-
-			(*_D.cursor)->c_get(*_D.cursor, &key, &value, DB_FIRST);
-			printf("Elapsed Time (microseconds): %lu\n", diff_time(end, start));
-			printf("Total Records Returned: %d\n", 1);
-
-			/*printf("Key: %.*s\nData: %.*s\n",
-			(int)key.size, (char *)key.data,
-			(int)value.size, (char *)value.data);*/
-
-			break;
-		case 3:
-			if (searchnumber == 4) {
-				//this program needs to search over different values four times. After all values have been used, the values will repeat with this message.
-				printf("The values for search will now repeat.");
-				searchnumber = 0;
-			}
-
-			if (searchnumber == 3) {
-				memset(&valuetomatch, 0, sizeof(valuetomatch));
-				strcpy(valuetomatch, _D.valuetomatch3);
-				searchnumber++;
-			}
-
-			if (searchnumber == 2) {
-				memset(&valuetomatch, 0, sizeof(valuetomatch));
-				strcpy(valuetomatch, _D.valuetomatch2);
-				searchnumber++;
-			}
-
-			if (searchnumber == 1) {
-				memset(&valuetomatch, 0, sizeof(valuetomatch));
-				strcpy(valuetomatch, _D.valuetomatch1);
-				searchnumber++;
-			}
-
-			if (searchnumber == 0) {
-				memset(&valuetomatch, 0, sizeof(valuetomatch));
-				strcpy(valuetomatch, _D.valuetomatch0);
-				searchnumber++;
-			}
-
-			key.flags = DB_DBT_USERMEM;
-			key.data = keybuff;
-			key.ulen = sizeof(keybuff);
-			value.flags = DB_DBT_USERMEM;
-			value.data = valuebuff;
-			value.ulen = sizeof(valuebuff);
-			resultcount = 0;
-
-			clock_readtime(&start); // Start query
-			(*_D.cursor)->c_get((*_D.cursor), &key, &value, DB_FIRST);
-			if (strcmp((char *)value.data, valuetomatch) == 0)
+			result = stat(filepath, &exists);
+			if (!result)
 			{
-				// Got an entry with correct data
-				
-				clock_readtime(&end);
-				totalTime += diff_time(end, start);
+				if (searchnumber == 4) {
+					//this program needs to search over different keys four times. After all keys have been used, they keys will repeat with this message.
+					printf("The keys for search will now repeat.\n");
+					searchnumber = 0;
+				}
+
+				if (searchnumber == 3) {
+					memset(&keytomatch, 0, sizeof(keytomatch));
+					strcpy(keytomatch, _D->keystomatch[3]);
+					searchnumber++;
+				}
+
+				if (searchnumber == 2) {
+					memset(&keytomatch, 0, sizeof(keytomatch));
+					strcpy(keytomatch, _D->keystomatch[2]);
+					searchnumber++;
+				}
+
+				if (searchnumber == 1) {
+					memset(&keytomatch, 0, sizeof(keytomatch));
+					strcpy(keytomatch, _D->keystomatch[1]);
+					searchnumber++;
+				}
+
+				if (searchnumber == 0) {
+					memset(&keytomatch, 0, sizeof(keytomatch));
+					strcpy(keytomatch, _D->keystomatch[0]);
+					searchnumber++;
+				}
+
+				memset(&key, 0, sizeof(key));
+				key.data = keytomatch;
+				key.size = strlen(key.data) + 1;
+				value.flags = DB_DBT_USERMEM;
+				value.data = valuebuff;
+				value.ulen = sizeof(valuebuff);
+
+				clock_readtime(&start); // Start query
+				(*_D->cursor)->c_get((*_D->cursor), &key, &value, DB_SET);
+				clock_readtime(&end); // End query
+
 				answers(key.data, 0);
 				answers(value.data, 1);
-				clock_readtime(&start);
-				resultcount++;
+
+				(*_D->cursor)->c_get((*_D->cursor), &key, &value, DB_FIRST);
+				printf("Elapsed Time (microseconds): %lu\n", diff_time(&end, &start));
+				printf("Total Records Returned: %d\n", 1);
+
 			}
-			while ((ret = (*_D.cursor)->c_get((*_D.cursor), &key, &value, DB_NEXT)) == 0)
+			else
 			{
+				puts("Please create the database first");
+			}
+			break;
+		case 3:
+			result = stat(filepath, &exists);
+			if (!result)
+			{
+				if (searchnumber == 4) {
+					//this program needs to search over different values four times. After all values have been used, the values will repeat with this message.
+					printf("The values for search will now repeat.");
+					searchnumber = 0;
+				}
+
+				if (searchnumber == 3) {
+					memset(&valuetomatch, 0, sizeof(valuetomatch));
+					strcpy(valuetomatch, _D->valuestomatch[3]);
+					searchnumber++;
+				}
+
+				if (searchnumber == 2) {
+					memset(&valuetomatch, 0, sizeof(valuetomatch));
+					strcpy(valuetomatch, _D->valuestomatch[2]);
+					searchnumber++;
+				}
+
+				if (searchnumber == 1) {
+					memset(&valuetomatch, 0, sizeof(valuetomatch));
+					strcpy(valuetomatch, _D->valuestomatch[1]);
+					searchnumber++;
+				}
+
+				if (searchnumber == 0) {
+					memset(&valuetomatch, 0, sizeof(valuetomatch));
+					strcpy(valuetomatch, _D->valuestomatch[0]);
+					searchnumber++;
+				}
+
+				key.flags = DB_DBT_USERMEM;
+				key.data = keybuff;
+				key.ulen = sizeof(keybuff);
+				value.flags = DB_DBT_USERMEM;
+				value.data = valuebuff;
+				value.ulen = sizeof(valuebuff);
+				resultcount = 0;
+
+				clock_readtime(&start); // Start query
+				(*_D->cursor)->c_get((*_D->cursor), &key, &value, DB_FIRST);
 				if (strcmp((char *)value.data, valuetomatch) == 0)
 				{
 					// Got an entry with correct data
+
 					clock_readtime(&end);
-					totalTime += diff_time(end, start);
+					totalTime += diff_time(&end, &start);
 					answers(key.data, 0);
 					answers(value.data, 1);
 					clock_readtime(&start);
 					resultcount++;
 				}
-			}
-			clock_readtime(&end); // End query
-			totalTime += diff_time(end, start);
-
-			printf("Elapsed Time (microseconds): %lu\n", totalTime);
-			printf("Total Records Returned: %d\n", resultcount);
-			break;
-		case 4:
-			printf("Please enter your minimum range: ");
-			scanf("%s", &mintomatch);
-			printf("Please enter your maximum range: ");
-			scanf("%s", &maxtomatch);
-
-			memset(&key, 0, sizeof(key));
-			key.data = mintomatch;
-			key.size = strlen(key.data) + 1;
-			value.flags = DB_DBT_USERMEM;
-			value.data = valuebuff;
-			value.ulen = sizeof(valuebuff);
-
-			resultcount = 0;
-
-			if (dbtype == 1)
-			{
-				clock_readtime(&start); // Start query
-				while ((ret = (*_D.cursor)->c_get((*_D.cursor), &key, &value, DB_SET_RANGE)) == 0)
+				while ((ret = (*_D->cursor)->c_get((*_D->cursor), &key, &value, DB_NEXT)) == 0)
 				{
-					if (strcmp((char *)key.data, maxtomatch) > 0)
+					if (strcmp((char *)value.data, valuetomatch) == 0)
 					{
-						// End of range
-						break;
+						// Got an entry with correct data
+						clock_readtime(&end);
+						totalTime += diff_time(&end, &start);
+						answers(key.data, 0);
+						answers(value.data, 1);
+						clock_readtime(&start);
+						resultcount++;
 					}
-					answers(key.data, 0);
-					answers(value.data, 1);
-					resultcount++;
-					((char*)key.data)[strlen((char *)key.data) - 1]++; // Increment last char before null terminator
 				}
 				clock_readtime(&end); // End query
+				totalTime += diff_time(&end, &start);
+
+				printf("Elapsed Time (microseconds): %lu\n", totalTime);
+				printf("Total Records Returned: %d\n", resultcount);
 			}
 			else
 			{
-				key.flags = DB_DBT_USERMEM;
-				key.data = keybuff;
-				key.ulen = sizeof(keybuff);
-				clock_readtime(&start); // Start query
-				(*_D.cursor)->c_get((*_D.cursor), &key, &value, DB_FIRST);
-				if (strcmp((char *)key.data, mintomatch) < 0)
+				puts("Please create the database first");
+			}
+			break;
+		case 4:
+			result = stat(filepath, &exists);
+			if (!result)
+			{
+				printf("Please enter your minimum range: ");
+				scanf("%s", mintomatch);
+				printf("Please enter your maximum range: ");
+				scanf("%s", maxtomatch);
+
+				memset(&key, 0, sizeof(key));
+				key.data = mintomatch;
+				key.size = strlen(key.data) + 1;
+				value.flags = DB_DBT_USERMEM;
+				value.data = valuebuff;
+				value.ulen = sizeof(valuebuff);
+
+				resultcount = 0;
+
+				if (dbtype == 1)
 				{
-					// Bad key
-				}
-				else if (strcmp((char *)key.data, maxtomatch) > 0)
-				{
-					// Bad key
+					clock_readtime(&start); // Start query
+					while ((ret = (*_D->cursor)->c_get((*_D->cursor), &key, &value, DB_SET_RANGE)) == 0)
+					{
+						if (strcmp((char *)key.data, maxtomatch) > 0)
+						{
+							// End of range
+							break;
+						}
+						printf("Key: %s\nData: %s\n", key.data, value.data);
+						answers(key.data, 0);
+						answers(value.data, 1);
+						resultcount++;
+						((char*)key.data)[strlen((char *)key.data) - 1]++; // Increment last char before null terminator
+					}
+					clock_readtime(&end); // End query
 				}
 				else
 				{
-					answers(key.data, 0);
-					answers(value.data, 1);
-					resultcount++;
-				}
-				while ((ret = (*_D.cursor)->c_get((*_D.cursor), &key, &value, DB_NEXT)) == 0)
-				{
+					key.flags = DB_DBT_USERMEM;
+					key.data = keybuff;
+					key.ulen = sizeof(keybuff);
+					clock_readtime(&start); // Start query
+					(*_D->cursor)->c_get((*_D->cursor), &key, &value, DB_FIRST);
 					if (strcmp((char *)key.data, mintomatch) < 0)
 					{
 						// Bad key
@@ -410,17 +406,38 @@ void DBCreate(int dbtype)
 						answers(value.data, 1);
 						resultcount++;
 					}
+					while ((ret = (*_D->cursor)->c_get((*_D->cursor), &key, &value, DB_NEXT)) == 0)
+					{
+						if (strcmp((char *)key.data, mintomatch) < 0)
+						{
+							// Bad key
+						}
+						else if (strcmp((char *)key.data, maxtomatch) > 0)
+						{
+							// Bad key
+						}
+						else
+						{
+							answers(key.data, 0);
+							answers(value.data, 1);
+							resultcount++;
+						}
+					}
+					clock_readtime(&end); // End query
 				}
-				clock_readtime(&end); // End query
+				printf("Elapsed Time (microseconds): %lu\n", diff_time(&end, &start));
+				printf("Total Records Returned: %d\n", resultcount);
 			}
-			printf("Elapsed Time (microseconds): %lu\n", diff_time(end, start));
-			printf("Total Records Returned: %d\n", resultcount);
+			else
+			{
+				puts("Please create the database first");
+			}
 			break;
 		case 5:
-			_D.destroy(file);
+			_destroy(_D, filepath);
 			break;
 		case 6:
-			_D.destroy(file);
+			_destroy(_D, filepath);
 			break;
 		}
 		if (task == 6)
@@ -430,3 +447,26 @@ void DBCreate(int dbtype)
 	}
 }
 
+int main(int argc, char ** argv)
+{
+	mkdir("./tmp", 0755);
+	mkdir("./tmp/ioltuszy_db", 0755);
+
+	if (argc == 2)
+	{
+		if (*argv[1] == '1' || *argv[1] == '2' || *argv[1] == '3')
+		{
+			int dbtype = (int)(*argv[1] - '0');
+			DBCreate(dbtype);
+		}
+		else
+		{
+			printf("Invalid DB Type Option");
+		}
+	}
+
+	rmdir("./tmp/ioltuszy_db");
+	rmdir("./tmp");
+
+	return EXIT_SUCCESS;
+}

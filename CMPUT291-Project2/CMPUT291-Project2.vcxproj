@@ -20,8 +20,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="database.c" />
+    <ClCompile Include="linux\database.c" />
+    <ClCompile Include="linux\main.c" />
+    <ClCompile Include="linux\timer.c" />
     <ClCompile Include="main.c" />
-    <ClCompile Include="shared.c" />
     <ClCompile Include="timer.c" />
   </ItemGroup>
   <ItemGroup>
@@ -30,9 +32,13 @@
   <ItemGroup>
     <None Include="..\LICENSE" />
     <None Include="..\README.md" />
+    <None Include="linux\makefile" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="database.h" />
+    <ClInclude Include="linux\database.h" />
+    <ClInclude Include="linux\db.h" />
+    <ClInclude Include="linux\timer.h" />
     <ClInclude Include="timer.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
