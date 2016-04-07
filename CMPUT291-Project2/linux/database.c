@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <sys/stat.h>
-#include "db.h"
+#include <db.h>
 #include <string.h>
 
 typedef struct DatabaseStruct Database;
@@ -128,7 +128,7 @@ void _populate(Database* self, int amount)
 		if (entry == random_exists[0]) {
 			self->keystomatch[0] = strdup(keybuff);
 			self->valuestomatch[0] = strdup(valuebuff);
-			
+
 			printf("Key: %s\n", self->keystomatch[0]);
 			printf("Value: %s\n", self->valuestomatch[0]);
 		}
@@ -470,3 +470,4 @@ int main(int argc, char ** argv)
 
 	return EXIT_SUCCESS;
 }
+
