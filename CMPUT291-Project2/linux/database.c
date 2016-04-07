@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <sys/stat.h>
-#include "db.h"
+#include <db.h>
 #include <string.h>
 typedef struct DatabaseStruct Database;
 struct DatabaseStruct {
@@ -62,7 +62,7 @@ char * _create(Database* self, int dbtype) // btree = 1, hash = 2
 	strncpy(filepath, "./tmp/ioltuszy_db/", 18);
 	strncat(filepath, (dbtype == 1) ? "btree" : (dbtype == 2) ? "hash" : "indexfile", (dbtype == 1) ? 5 : (dbtype == 2) ? 4 : 9);
 	strncat(filepath, ".db\0", 4);
-	(self->db)->open((self->db), NULL, filepath, NULL, DB_BTREE, DB_CREATE, 0755);
+	(self->db)->open((self->db), NULL, filepath, NULL, dbtype, DB_CREATE, 0755);
 	char* solution;
 	solution = strdup(filepath);
 	return solution;
