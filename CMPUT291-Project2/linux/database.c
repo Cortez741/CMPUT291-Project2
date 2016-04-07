@@ -292,7 +292,7 @@ void DBCreate(int dbtype)
 				answers(value.data, 1);
 
 				(*_D->cursor)->c_get((*_D->cursor), &key, &value, DB_FIRST);
-				printf("Elapsed Time (microseconds): %lu\n", diff_time(&end, &start));
+				printf("\nElapsed Time (microseconds): %lu\n", diff_time(&end, &start));
 				printf("Total Records Returned: %d\n", 1);
 
 			}
