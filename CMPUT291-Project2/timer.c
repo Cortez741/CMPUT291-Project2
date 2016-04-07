@@ -40,4 +40,12 @@ void clock_readtime(long* t)
 	t[1] = ticks_to_nanos(time.QuadPart % frequency.QuadPart, frequency.QuadPart); // nanoseconds
 }
 
+void diff_time(long* end, long* start)
+{
+	long seconds = end[0] - start[0];
+	long nanoseconds = seconds*1e9;
+	nanoseconds += (end[1] - start[1]);
+	return nanoseconds / 1000;
+}
+
 #endif

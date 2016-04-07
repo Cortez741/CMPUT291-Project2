@@ -13,6 +13,16 @@ struct DatabaseStruct {
 	void(*destroy)(Database*);
 	void(*populate)(Database*, int);
 	int(*menu)(Database*);
+
+	char keytomatch0[128];
+	char keytomatch1[128];
+	char keytomatch2[128];
+	char keytomatch3[128];
+
+	char valuetomatch0[128];
+	char valuetomatch1[128];
+	char valuetomatch2[128];
+	char valuetomatch3[128];
 };
 void AddEntry(Database* self, char * keyc, char * valuec);
 void _init(Database* self);
