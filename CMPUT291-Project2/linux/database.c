@@ -5,6 +5,7 @@
 typedef struct DatabaseStruct Database;
 struct DatabaseStruct {
 	DB* db;
+	DB* sdb;
 	DBC** cursor;
 
 	char **keystomatch;
@@ -49,20 +50,55 @@ void AddEntry(Database* self, char * keyc, char * valuec)
 		self->db->err(self->db, ret, "DB->cursor");
 }
 
+int SwapData(DB *dbp, const DBT *pkey, const DBT *pdata, DBT *skey)
+{
+	memset(skey, 0, sizeof(DBT));
+	skey->data = pdata->data;
+	skey->size = strlen(pdata->data) + 1;
+	return (0);
+}
+
 char * _create(Database* self, int dbtype) // btree = 1, hash = 2
 {
 	db_create(&(self->db), NULL, 0);
 	char filepath[256];
-	memset(&filepath, 0, sizeof(filepath));
-	for (int i = 0; i<strlen(filepath); i++)
+
+	if (dbtype == 3)
 	{
-		filepath[0] = malloc(sizeof(char));
+		db_create(&(self->sdb), NULL, 0);
+		memset(&filepath, 0, sizeof(filepath));
+		for (int i = 0; i<strlen(filepath); i++)
+		{
+			filepath[0] = malloc(sizeof(char));
+		}
+		memset(&filepath, 0, sizeof(filepath));
+		strncpy(filepath, "./tmp/ioltuszy_db/", 18);
+		strncat(filepath, "indexfile", 9);
+		strncat(filepath, ".db\0", 4);
+		(self->sdb)->set_flags((self->sdb), DB_DUP | DB_DUPSORT);
+		(self->sdb)->open((self->sdb), NULL, filepath, NULL, DB_HASH, DB_CREATE, 0755);
+
+		memset(&filepath, 0, sizeof(filepath));
+		strncpy(filepath, "./tmp/ioltuszy_db/", 18);
+		strncat(filepath, "btree", 5);
+		strncat(filepath, ".db\0", 4);
+		(self->db)->open((self->db), NULL, filepath, NULL, DB_BTREE, DB_CREATE, 0755);
+
+		(self->db)->associate(self->db, NULL, self->sdb, SwapData, 0);
 	}
-	memset(&filepath, 0, sizeof(filepath));
-	strncpy(filepath, "./tmp/ioltuszy_db/", 18);
-	strncat(filepath, (dbtype == 1) ? "btree" : (dbtype == 2) ? "hash" : "indexfile", (dbtype == 1) ? 5 : (dbtype == 2) ? 4 : 9);
-	strncat(filepath, ".db\0", 4);
-	(self->db)->open((self->db), NULL, filepath, NULL, dbtype, DB_CREATE, 0755);
+	else
+	{
+		memset(&filepath, 0, sizeof(filepath));
+		for (int i = 0; i<strlen(filepath); i++)
+		{
+			filepath[0] = malloc(sizeof(char));
+		}
+		memset(&filepath, 0, sizeof(filepath));
+		strncpy(filepath, "./tmp/ioltuszy_db/", 18);
+		strncat(filepath, (dbtype == 1) ? "btree" : "hash", (dbtype == 1) ? 5 : 4);
+		strncat(filepath, ".db\0", 4);
+		(self->db)->open((self->db), NULL, filepath, NULL, dbtype, DB_CREATE, 0755);
+	}
 	char* solution;
 	solution = strdup(filepath);
 	return solution;
@@ -74,6 +110,11 @@ void _destroy(Database* self, char * filepath)
 	if (!result)
 	{
 		unlink(filepath);
+	}
+	result = stat("./tmp/ioltuszy_db/indexfile.db", &exists);
+	if (!result)
+	{
+		unlink("./tmp/ioltuszy_db/indexfile.db");
 	}
 }
 void _populate(Database* self, int amount)
@@ -95,12 +136,6 @@ void _populate(Database* self, int amount)
 	int random_exists[1];
 	for (int i = 0; i <= 1; i++) {
 		random_exists[i] = rand() % 100000;
-	}
-
-	char * keys[4];
-	for (int i = 0; i<3; i++)
-	{
-		keys[i] = (char *)malloc(sizeof(char) * 129);
 	}
 
 	for (int entry = 0; entry < amount; entry++) { // # to populate with
@@ -175,8 +210,9 @@ void DBCreate(int dbtype)
 {
 	Database * _D;
 	_D = (Database *)malloc(sizeof(_D));
-	DBT key, value;
+	DBT key, pkey, value;
 	char keybuff[128];
+	char pkeybuff[128];
 	char valuebuff[128];
 	char* filepath;
 	char file[256];
@@ -210,6 +246,7 @@ void DBCreate(int dbtype)
 			result = stat(file, &exists);
 			if (!result)
 			{
+				_D->db->cursor(_D->db, NULL, _D->cursor, 0);
 				if (searchnumber == 4) {
 					//this program needs to search over different keys four times. After all keys have been used, they keys will repeat with this message.
 					printf("The keys for search will now repeat.\n");
@@ -297,46 +334,82 @@ void DBCreate(int dbtype)
 					strcpy(valuetomatch, _D->valuestomatch[0]);
 					searchnumber++;
 				}
-
-				key.flags = DB_DBT_USERMEM;
-				key.data = keybuff;
-				key.ulen = sizeof(keybuff);
-				value.flags = DB_DBT_USERMEM;
-				value.data = valuebuff;
-				value.ulen = sizeof(valuebuff);
-				resultcount = 0;
-
-				clock_gettime(CLOCK_MONOTONIC, &start); // Start query
-				(*_D->cursor)->c_get((*_D->cursor), &key, &value, DB_FIRST);
-				if (strcmp((char *)value.data, valuetomatch) == 0)
+				if (dbtype == 3)
 				{
-					// Got an entry with correct data
+					_D->sdb->cursor(_D->sdb, NULL, _D->cursor, 0);
 
-					clock_gettime(CLOCK_MONOTONIC, &end);
-					totalTime += diff_time(&end, &start);
-					answers(key.data, 0);
-					answers(value.data, 1);
-					clock_gettime(CLOCK_MONOTONIC, &start);
-					resultcount++;
-				}
-				while ((ret = (*_D->cursor)->c_get((*_D->cursor), &key, &value, DB_NEXT)) == 0)
-				{
+					memset(&key, 0, sizeof(key));
+					key.data = valuetomatch;
+					key.size = strlen(key.data) + 1;
+					pkey.flags = DB_DBT_USERMEM;
+					pkey.data = pkeybuff;
+					pkey.ulen = sizeof(pkeybuff);
+					value.flags = DB_DBT_USERMEM;
+					value.data = valuebuff;
+					value.ulen = sizeof(valuebuff);
+
+					clock_gettime(CLOCK_MONOTONIC, &start); // Start query
+					(*_D->cursor)->c_pget((*_D->cursor), &key, &pkey, &value, DB_SET);
 					if (strcmp((char *)value.data, valuetomatch) == 0)
 					{
 						// Got an entry with correct data
+						clock_gettime(CLOCK_MONOTONIC, &end); // End query
+						totalTime += diff_time(&end, &start);
+						answers(pkey.data, 0);
+						answers(key.data, 1);
+						clock_gettime(CLOCK_MONOTONIC, &start);
+						resultcount++;
+
+					}
+					clock_gettime(CLOCK_MONOTONIC, &end); // End query
+					totalTime += diff_time(&end, &start);
+
+					printf("Elapsed Time (microseconds): %lu\n", totalTime);
+					printf("Total Records Returned: %d\n", resultcount);
+				}
+				else
+				{
+					_D->db->cursor(_D->db, NULL, _D->cursor, 0);
+					key.flags = DB_DBT_USERMEM;
+					key.data = keybuff;
+					key.ulen = sizeof(keybuff);
+					value.flags = DB_DBT_USERMEM;
+					value.data = valuebuff;
+					value.ulen = sizeof(valuebuff);
+					resultcount = 0;
+
+					clock_gettime(CLOCK_MONOTONIC, &start); // Start query
+					(*_D->cursor)->c_get((*_D->cursor), &key, &value, DB_FIRST);
+					if (strcmp((char *)value.data, valuetomatch) == 0)
+					{
+						// Got an entry with correct data
+
 						clock_gettime(CLOCK_MONOTONIC, &end);
 						totalTime += diff_time(&end, &start);
-						answers(key.data, 0);
-						answers(value.data, 1);
+						answers(pkey.data, 0);
+						answers(key.data, 1);
 						clock_gettime(CLOCK_MONOTONIC, &start);
 						resultcount++;
 					}
-				}
-				clock_gettime(CLOCK_MONOTONIC, &end); // End query
-				totalTime += diff_time(&end, &start);
+					while ((ret = (*_D->cursor)->c_get((*_D->cursor), &key, &value, DB_NEXT)) == 0)
+					{
+						if (strcmp((char *)value.data, valuetomatch) == 0)
+						{
+							// Got an entry with correct data
+							clock_gettime(CLOCK_MONOTONIC, &end);
+							totalTime += diff_time(&end, &start);
+							answers(key.data, 0);
+							answers(value.data, 1);
+							clock_gettime(CLOCK_MONOTONIC, &start);
+							resultcount++;
+						}
+					}
+					clock_gettime(CLOCK_MONOTONIC, &end); // End query
+					totalTime += diff_time(&end, &start);
 
-				printf("Elapsed Time (microseconds): %lu\n", totalTime);
-				printf("Total Records Returned: %d\n", resultcount);
+					printf("Elapsed Time (microseconds): %lu\n", totalTime);
+					printf("Total Records Returned: %d\n", resultcount);
+				}
 			}
 			else
 			{
@@ -347,6 +420,8 @@ void DBCreate(int dbtype)
 			result = stat(file, &exists);
 			if (!result)
 			{
+				_D->db->cursor(_D->db, NULL, _D->cursor, 0);
+
 				printf("Please enter your minimum range: ");
 				scanf("%s", mintomatch);
 				printf("Please enter your maximum range: ");
@@ -361,7 +436,7 @@ void DBCreate(int dbtype)
 
 				resultcount = 0;
 
-				if (dbtype == 1)
+				if (dbtype == 1 || dbtype == 3)
 				{
 					clock_gettime(CLOCK_MONOTONIC, &start); // Start query
 					while ((ret = (*_D->cursor)->c_get((*_D->cursor), &key, &value, DB_SET_RANGE)) == 0)
@@ -419,6 +494,7 @@ void DBCreate(int dbtype)
 					}
 					clock_gettime(CLOCK_MONOTONIC, &end); // End query
 				}
+				(*_D->cursor)->c_get((*_D->cursor), &key, &value, DB_FIRST);
 				printf("Elapsed Time (microseconds): %lu\n", diff_time(&end, &start));
 				printf("Total Records Returned: %d\n", resultcount);
 			}
