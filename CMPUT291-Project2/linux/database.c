@@ -524,15 +524,35 @@ int main(int argc, char ** argv)
 
 	if (argc == 2)
 	{
-		if (*argv[1] == '1' || *argv[1] == '2' || *argv[1] == '3')
+		if (0 == strcmp(argv[1], "btree"))
+		{
+			int dbtype = 1;
+			DBCreate(dbtype);
+		}
+
+		else if (0 == strcmp(argv[1], "hash"))
+		{
+			int dbtype = 2;
+			DBCreate(dbtype);
+		}
+
+		else if (0 == strcmp(argv[1], "indexfile"))
+		{
+			int dbtype = 3;
+			DBCreate(dbtype);
+		}
+
+		else if (*argv[1] == '1' || *argv[1] == '2' || *argv[1] == '3')
 		{
 			int dbtype = (int)(*argv[1] - '0');
 			DBCreate(dbtype);
 		}
+	
 		else
 		{
 			printf("Invalid DB Type Option");
 		}
+	
 	}
 
 	rmdir("./tmp/ioltuszy_db");
